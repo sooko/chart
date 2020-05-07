@@ -89,7 +89,8 @@ Builder.load_string("""
                 canvas.after:
                     PopMatrix
                 Label:
-                    text:"{} ms/div".format(root.max_x/root.major_x/root.times*root.speed*10)
+                    text:"{} s/div".format(root.max_x/root.major_x/root.times*root.speed)
+
 """)
 class Plot(Widget):
     red         =ObjectProperty(None)
@@ -164,7 +165,6 @@ class Plot(Widget):
         pass
     def draw_Plot(self,xx,yy,times):
         pass
-
 class Label_x(Label):
     pass
 class Label_y(Label):
@@ -182,16 +182,16 @@ class Chart(FloatLayout):
     rpl=ObjectProperty(None)
     rply=ObjectProperty(None)
     count=0
+    realtime=BooleanProperty(True)
+    times=NumericProperty(2)
+    speed=NumericProperty(.5)
 
-    realtime=BooleanProperty(False)
-    times=NumericProperty(1)
-    speed=NumericProperty(.25)
     major_x=NumericProperty(10)
     major_y=NumericProperty(10)
     max_x  =NumericProperty(100)
     max_y  =NumericProperty(100)
-    min_y=NumericProperty(-30)
-    
+    min_y=NumericProperty(0)
+    min_x=NumericProperty(0)
     line=DictProperty({"red":[],
                        "green":[],
                        "blue":[],
@@ -229,26 +229,21 @@ class Chart(FloatLayout):
         for i in range(self.major_x):
             self.rp.add_widget(self.a(pos=(self.rp.width/self.major_x*i+self.rp.x , self.rp.y)))
             if not self.realtime:
-                self.rplx.add_widget(Label_x(text=str(self.major_x+(i*(self.major_x)))))
-                
+                self.rplx.add_widget(Label_x(text=str(self.major_x+(i*self.major_x))))
         for i in range(self.major_y):
-
             self.rp.add_widget(self.b(pos=(self.rp.x , self.rp.height/self.major_y*i+self.rp.y)))
-            self.rply.add_widget(Label_y(text=str(self.max_y-(i*self.major_y))))
-            
+            self.rply.add_widget(Label_y(text="{:.1f}".format(self.max_y- (i*(self.max_y-self.min_y)/self.major_y))))
         for i in self.line:
             self.line[i].clear()
     def timer(self,dt):
         if self.realtime:
             self.count+=self.times
-            # self.draw_line(xx=self.count,yy=self.count,clr="blue")
-            # self.draw_line(xx=self.count,yy=10+10,clr="red")
-            # self.draw_line(self.count,self.ids.slider.value+20,"green")
+            self.draw_line(xx=self.count,yy=10,clr="blue")
             if self.count>self.max_x:
                 self.plt.translate.x=self.plt.width-self.plt.width/self.max_x*self.count
     def draw_line(self,clr="white",xx=0,yy=0):
         if self.realtime:
-            a=[self.plt.x+(self.count*self.plt.width/self.max_x),self.plt.y+(yy*self.plt.height/self.max_y)]
+            a=[self.plt.x+(self.count*self.plt.width/self.max_x),self.plt.y+(yy*self.plt.height/self.max_y)   ]
             self.line[clr].append(a)
             self.plt.clr[clr].points=self.line[clr]
             if self.count > self.max_x:
