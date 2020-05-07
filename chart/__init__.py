@@ -41,25 +41,23 @@ Builder.load_string("""
     pos_hint:{"center_x":.5,"center_y":.5}
     BoxLayout
         pos_hint:{"center_x":.5,"center_y":.5}
+       
         BoxLayout:
+            orientation:"vertical"
             size_hint:None,None
+            width:dp(30)
+            font_size:self.width
             height:dp(self.parent.height)-dp(30)
-            width:self.minimum_width
-            BoxLayout:
-                orientation:"vertical"
-                size_hint:None,1
-                width:dp(30)
-                font_size:self.width
-                pos_hint:{"center_x":.5,"top":1}
-                id:root_plot_label_y
-                canvas.before:
-                    PushMatrix
-                    Translate:
-                        x:0
-                        y:self.height/root.major_y/2
-                        z:0
-                canvas.after:
-                    PopMatrix
+            pos_hint:{"center_x":.5,"top":1}
+            id:root_plot_label_y
+            canvas.before:
+                PushMatrix
+                Translate:
+                    x:0
+                    y:self.height/root.major_y/2
+                    z:0
+            canvas.after:
+                PopMatrix
             # we can add label y here
         BoxLayout
             pos_hint:{"center_x":.5,"center_y":.5}
@@ -185,13 +183,15 @@ class Chart(FloatLayout):
     rply=ObjectProperty(None)
     count=0
 
-    realtime=BooleanProperty(True)
+    realtime=BooleanProperty(False)
     times=NumericProperty(1)
     speed=NumericProperty(.25)
     major_x=NumericProperty(10)
     major_y=NumericProperty(10)
     max_x  =NumericProperty(100)
     max_y  =NumericProperty(100)
+    min_y=NumericProperty(-30)
+    
     line=DictProperty({"red":[],
                        "green":[],
                        "blue":[],
@@ -229,10 +229,13 @@ class Chart(FloatLayout):
         for i in range(self.major_x):
             self.rp.add_widget(self.a(pos=(self.rp.width/self.major_x*i+self.rp.x , self.rp.y)))
             if not self.realtime:
-                self.rplx.add_widget(Label_x(text=str((i*self.max_x)+self.max_x)))
+                self.rplx.add_widget(Label_x(text=str(self.major_x+(i*(self.major_x)))))
+                
         for i in range(self.major_y):
+
             self.rp.add_widget(self.b(pos=(self.rp.x , self.rp.height/self.major_y*i+self.rp.y)))
-            self.rply.add_widget(Label_y(text=str(self.max_x-(i*self.major_y))))
+            self.rply.add_widget(Label_y(text=str(self.max_y-(i*self.major_y))))
+            
         for i in self.line:
             self.line[i].clear()
     def timer(self,dt):
@@ -243,7 +246,6 @@ class Chart(FloatLayout):
             # self.draw_line(self.count,self.ids.slider.value+20,"green")
             if self.count>self.max_x:
                 self.plt.translate.x=self.plt.width-self.plt.width/self.max_x*self.count
-
     def draw_line(self,clr="white",xx=0,yy=0):
         if self.realtime:
             a=[self.plt.x+(self.count*self.plt.width/self.max_x),self.plt.y+(yy*self.plt.height/self.max_y)]
@@ -255,8 +257,8 @@ class Chart(FloatLayout):
             a=[self.plt.x+(xx*self.plt.width/self.max_x),self.plt.y+(yy*self.plt.height/self.max_y)]
             self.line[clr].append(a)
             self.plt.clr[clr].points=self.line[clr]
-# class Graph(App):
-#     def build(self):
-#         return Chart()
-# if __name__=="__main__":
-#     Graph().run()
+class Graph(App):
+    def build(self):
+        return Chart()
+if __name__=="__main__":
+    Graph().run()
