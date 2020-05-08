@@ -41,7 +41,6 @@ Builder.load_string("""
     pos_hint:{"center_x":.5,"center_y":.5}
     BoxLayout
         pos_hint:{"center_x":.5,"center_y":.5}
-       
         BoxLayout:
             orientation:"vertical"
             size_hint:None,None
@@ -68,8 +67,8 @@ Builder.load_string("""
                     id:root_plot
                     size_hint:1,1
                     pos_hint:{"center_x":.5,"center_y":.5}
-                    on_size:root.change_size()
-                    on_pos:root.change_size()
+                    # on_size:root.change_size()
+                    # on_pos:root.change_size()
                 Plot:
                     size_hint:1,1
                     pos_hint:{"center_x":.5,"center_y":.5}
@@ -92,6 +91,7 @@ Builder.load_string("""
                     text:"{} s/div".format(root.max_x/root.major_x/root.times*root.speed)
 
 """)
+
 class Plot(Widget):
     red         =ObjectProperty(None)
     yellow      =ObjectProperty(None)
@@ -209,12 +209,18 @@ class Chart(FloatLayout):
                                 })
     def __init__(self, **kwargs):
         super(Chart,self).__init__(**kwargs)
+        self.init()
+    def init(self):
+        self.data_ready=None
+        Clock.unschedule(self.delay)
+        Clock.schedule_once(self.delay,.5)
+        # if self.realtime:
+        #     Clock.schedule_interval(self.timer,self.speed)
+    def delay(self,dt):
+        self.data_ready=1
         self.plt=self.ids["plt"]
         self.rplx=self.ids["root_plot_label_x"]
         self.rply=self.ids["root_plot_label_y"]
-        if self.realtime:
-            Clock.schedule_interval(self.timer,self.speed)
-    def change_size(self):
         if self.realtime:
             Clock.unschedule(self.timer,self.speed)
             Clock.schedule_interval(self.timer,self.speed)
